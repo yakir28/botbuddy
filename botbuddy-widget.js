@@ -1,25 +1,54 @@
-(function(){
-  // Store business ID from init call
+(function () {
   let businessId = null;
 
   function init(config) {
-    businessId = config.businessId || "default-business-id";
+    businessId = config.businessId;
 
-    createWidget(businessId);
+    // Fetch dynamic config from Bubble
+    const apiUrl = `https://botbuddy-new.bubbleapps.io/version-test/api/1.1/obj/bot/${businessId}`;
+
+    fetch(apiUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        const botConfig = data.response;
+
+        const buttonColor = botConfig.button_color || "#5454D4";
+        const textColor = botConfig.text_color || "#ffffff";
+        const position = botConfig.position || "bottom-right";
+
+        createWidget({ businessId, buttonColor, textColor, position });
+      })
+      .catch((err) => {
+        console.error("Failed to fetch bot config:", err);
+        createWidget({ businessId }); // fallback
+      });
   }
 
-  function createWidget(businessId) {
+  function createWidget({
+    businessId,
+    buttonColor = "#5454D4",
+    textColor = "#ffffff",
+    position = "bottom-right",
+  }) {
     const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?business=${encodeURIComponent(businessId)}`;
 
-    // Create chat button
+    // Determine position styles
+    const positionStyles = {
+      "top-left": { top: "20px", left: "20px" },
+      "top-right": { top: "20px", right: "20px" },
+      "bottom-left": { bottom: "20px", left: "20px" },
+      "bottom-right": { bottom: "20px", right: "20px" },
+    };
+
+    const pos = positionStyles[position] || positionStyles["bottom-right"];
+
+    // Create Chat Button
     const chatButton = document.createElement("button");
     chatButton.innerHTML = "💬";
     Object.assign(chatButton.style, {
       position: "fixed",
-      bottom: "20px",
-      right: "20px",
-      backgroundColor: "#5454D4",
-      color: "#fff",
+      backgroundColor: buttonColor,
+      color: textColor,
       fontSize: "24px",
       border: "none",
       borderRadius: "50%",
@@ -28,15 +57,14 @@
       cursor: "pointer",
       zIndex: "9999",
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.25)",
+      ...pos,
     });
 
-    // Create iframe
+    // Create Iframe
     const chatIframe = document.createElement("iframe");
     chatIframe.src = chatUrl;
     Object.assign(chatIframe.style, {
       position: "fixed",
-      bottom: "90px",
-      right: "20px",
       width: "360px",
       height: "520px",
       border: "none",
@@ -44,41 +72,42 @@
       display: "none",
       zIndex: "9999",
       boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
-      backgroundColor: "#fff",
+      ...pos,
     });
 
-    // Toggle iframe visibility on button click
     chatButton.addEventListener("click", () => {
-      chatIframe.style.display = chatIframe.style.display === "none" ? "block" : "none";
+      chatIframe.style.display =
+        chatIframe.style.display === "none" ? "block" : "none";
     });
 
-    // Append to document body
     document.body.appendChild(chatButton);
     document.body.appendChild(chatIframe);
   }
 
-  // Setup global botbuddy function queue if not present
-  window.botbuddy = window.botbuddy || function() {
-    (window.botbuddy.q = window.botbuddy.q || []).push(arguments);
-  };
+  // Setup global botbuddy queue function
+  window.botbuddy =
+    window.botbuddy ||
+    function () {
+      (window.botbuddy.q = window.botbuddy.q || []).push(arguments);
+    };
 
-  // Check queued commands for init
-  if(window.botbuddy.q) {
-    for(let i=0; i<window.botbuddy.q.length; i++) {
+  // Check for queued init
+  if (window.botbuddy.q) {
+    for (let i = 0; i < window.botbuddy.q.length; i++) {
       const args = window.botbuddy.q[i];
-      if(args[0] === "init" && args[1]) {
+      if (args[0] === "init" && args[1]) {
         init(args[1]);
       }
     }
   }
 
-  // Proxy to catch future init calls
+  // Proxy to handle future init calls
   window.botbuddy = new Proxy(window.botbuddy, {
     apply(target, thisArg, args) {
-      if(args[0] === "init" && args[1]) {
+      if (args[0] === "init" && args[1]) {
         init(args[1]);
       }
       return target(...args);
-    }
+    },
   });
 })();
