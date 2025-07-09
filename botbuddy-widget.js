@@ -1,33 +1,44 @@
 (function () {
   let businessId = null;
 
+  // Fetch business by ID, then fetch bot by botId
   function init(config) {
     businessId = config.businessId;
 
-    // Fetch the business object including its linked bot
-    const apiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}`;
+    // Step 1: Fetch business object to get bot ID
+    const businessApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}`;
 
-    fetch(apiUrl)
+    fetch(businessApiUrl)
       .then((res) => res.json())
-      .then((data) => {
-        const business = data.response;
+      .then((businessData) => {
+        const business = businessData.response;
         if (!business || !business.bot) {
-          throw new Error("Bot not found for business");
+          throw new Error("No bot linked to this business");
         }
+        const botId = business.bot._id || business.bot;
 
-        const bot = business.bot;
+        // Step 2: Fetch bot config by bot ID
+        const botApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/bot/${botId}`;
 
-        const botId = bot._id;
-        const buttonColor = bot.color || "#5454D4";
-        const textColor = bot.text_color || "#ffffff";
-        const position = bot.position || "bottom-right";
+        return fetch(botApiUrl)
+          .then((res) => res.json())
+          .then((botData) => {
+            const bot = botData.response;
+            if (!bot) throw new Error("Bot not found");
 
-        createWidget({ businessId, botId, buttonColor, textColor, position });
+            // Use bot config to create widget
+            createWidget({
+              businessId,
+              botId,
+              buttonColor: bot.color || "#5454D4",
+              textColor: bot.text_color || "#ffffff",
+              position: bot.position || "bottom-right",
+            });
+          });
       })
       .catch((err) => {
-        console.error("Failed to fetch bot config:", err);
-        // fallback widget with default styles and no botId
-        createWidget({ businessId });
+        console.error("Error fetching bot config:", err);
+        createWidget({ businessId }); // fallback with default styling
       });
   }
 
