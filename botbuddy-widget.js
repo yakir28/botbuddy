@@ -5,7 +5,7 @@
     businessId = config.businessId;
 
     // Fetch the business object including its linked bot
-    const apiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}?include=bot`;
+    const apiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}`;
 
     fetch(apiUrl)
       .then((res) => res.json())
