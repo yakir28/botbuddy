@@ -5,7 +5,7 @@
     businessId = config.businessId;
 
     // Fetch dynamic config from Bubble
-    const apiUrl = `https://botbuddy-new.bubbleapps.io/version-test/api/1.1/obj/bot/${businessId}`;
+    const apiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/bot/${businessId}`;
 
     fetch(apiUrl)
       .then((res) => res.json())
