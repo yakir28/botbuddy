@@ -4,32 +4,42 @@
   function init(config) {
     businessId = config.businessId;
 
-    const apiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/bot/${businessId}`;
+    // Fetch the business object including its linked bot
+    const apiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}?include=bot`;
 
     fetch(apiUrl)
       .then((res) => res.json())
       .then((data) => {
-        const botConfig = data.response;
+        const business = data.response;
+        if (!business || !business.bot) {
+          throw new Error("Bot not found for business");
+        }
 
-        const buttonColor = botConfig.color || "#5454D4";
-        const textColor = botConfig.text_color || "#ffffff";
-        const position = botConfig.position || "bottom-right";
+        const bot = business.bot;
 
-        createWidget({ businessId, buttonColor, textColor, position });
+        const botId = bot._id;
+        const buttonColor = bot.color || "#5454D4";
+        const textColor = bot.text_color || "#ffffff";
+        const position = bot.position || "bottom-right";
+
+        createWidget({ businessId, botId, buttonColor, textColor, position });
       })
       .catch((err) => {
         console.error("Failed to fetch bot config:", err);
-        createWidget({ businessId }); // fallback with default style
+        // fallback widget with default styles and no botId
+        createWidget({ businessId });
       });
   }
 
   function createWidget({
     businessId,
+    botId = null,
     buttonColor = "#5454D4",
     textColor = "#ffffff",
     position = "bottom-right",
   }) {
-    const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?business=${encodeURIComponent(businessId)}`;
+    const chatParam = botId || businessId;
+    const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?bot=${encodeURIComponent(chatParam)}`;
 
     const positionStyles = {
       "top-left": { top: "20px", left: "20px" },
@@ -40,7 +50,6 @@
 
     const pos = positionStyles[position] || positionStyles["bottom-right"];
 
-    // Create Chat Button
     const chatButton = document.createElement("button");
     chatButton.innerHTML = "💬";
     Object.assign(chatButton.style, {
@@ -58,7 +67,6 @@
       ...pos,
     });
 
-    // Create Iframe
     const chatIframe = document.createElement("iframe");
     chatIframe.src = chatUrl;
     Object.assign(chatIframe.style, {
@@ -82,14 +90,12 @@
     document.body.appendChild(chatIframe);
   }
 
-  // Setup global botbuddy queue function
   window.botbuddy =
     window.botbuddy ||
     function () {
       (window.botbuddy.q = window.botbuddy.q || []).push(arguments);
     };
 
-  // Handle queued calls
   if (window.botbuddy.q) {
     for (let i = 0; i < window.botbuddy.q.length; i++) {
       const args = window.botbuddy.q[i];
@@ -99,7 +105,6 @@
     }
   }
 
-  // Proxy for future dynamic calls
   window.botbuddy = new Proxy(window.botbuddy, {
     apply(target, thisArg, args) {
       if (args[0] === "init" && args[1]) {
