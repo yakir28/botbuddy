@@ -1,11 +1,10 @@
 (function () {
   let businessId = null;
 
-  // Fetch business by ID, then fetch bot by botId
   function init(config) {
     businessId = config.businessId;
 
-    // Step 1: Fetch business object to get bot ID
+    // Fetch business object
     const businessApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}`;
 
     fetch(businessApiUrl)
@@ -15,30 +14,17 @@
         if (!business || !business.bot) {
           throw new Error("No bot linked to this business");
         }
+
         const botId = business.bot._id || business.bot;
+        const buttonColor = business.color || "#5454D4";
+        const textColor = business.text_color || "#ffffff";
+        const position = business.position || "bottom-right";
 
-        // Step 2: Fetch bot config by bot ID
-        const botApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/bot/${botId}`;
-
-        return fetch(botApiUrl)
-          .then((res) => res.json())
-          .then((botData) => {
-            const bot = botData.response;
-            if (!bot) throw new Error("Bot not found");
-
-            // Use bot config to create widget
-            createWidget({
-              businessId,
-              botId,
-              buttonColor: bot.color || "#5454D4",
-              textColor: bot.text_color || "#ffffff",
-              position: bot.position || "bottom-right",
-            });
-          });
+        createWidget({ businessId, botId, buttonColor, textColor, position });
       })
       .catch((err) => {
-        console.error("Error fetching bot config:", err);
-        createWidget({ businessId }); // fallback with default styling
+        console.error("Error fetching business/bot config:", err);
+        createWidget({ businessId }); // fallback
       });
   }
 
