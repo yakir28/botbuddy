@@ -4,7 +4,6 @@
   function init(config) {
     businessId = config.businessId;
 
-    // Fetch dynamic config from Bubble
     const apiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/bot/${businessId}`;
 
     fetch(apiUrl)
@@ -12,7 +11,7 @@
       .then((data) => {
         const botConfig = data.response;
 
-        const buttonColor = botConfig.button_color || "#5454D4";
+        const buttonColor = botConfig.color || "#5454D4";
         const textColor = botConfig.text_color || "#ffffff";
         const position = botConfig.position || "bottom-right";
 
@@ -20,7 +19,7 @@
       })
       .catch((err) => {
         console.error("Failed to fetch bot config:", err);
-        createWidget({ businessId }); // fallback
+        createWidget({ businessId }); // fallback with default style
       });
   }
 
@@ -32,7 +31,6 @@
   }) {
     const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?business=${encodeURIComponent(businessId)}`;
 
-    // Determine position styles
     const positionStyles = {
       "top-left": { top: "20px", left: "20px" },
       "top-right": { top: "20px", right: "20px" },
@@ -91,7 +89,7 @@
       (window.botbuddy.q = window.botbuddy.q || []).push(arguments);
     };
 
-  // Check for queued init
+  // Handle queued calls
   if (window.botbuddy.q) {
     for (let i = 0; i < window.botbuddy.q.length; i++) {
       const args = window.botbuddy.q[i];
@@ -101,7 +99,7 @@
     }
   }
 
-  // Proxy to handle future init calls
+  // Proxy for future dynamic calls
   window.botbuddy = new Proxy(window.botbuddy, {
     apply(target, thisArg, args) {
       if (args[0] === "init" && args[1]) {
