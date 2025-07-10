@@ -19,6 +19,7 @@
 
         console.log("✅ Business loaded:", data.response);
 
+        // ✅ FIXED: Correct query param
         const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?business=${encodeURIComponent(businessId)}`;
 
         const chatButton = document.createElement("button");
