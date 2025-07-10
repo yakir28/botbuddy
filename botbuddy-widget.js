@@ -1,50 +1,76 @@
 (function () {
-  let botId = null;
-
   function init(config) {
-    console.log("BotBuddy init called with config:", config);
-    botId = config.botId;
+    console.log("🟣 BotBuddy init called with config:", config);
 
-    const botApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/bot/${botId}`;
-    console.log("Fetching bot from URL:", botApiUrl);
+    const businessId = config.businessId || null;
+    const botId = config.botId || null;
 
-    fetch(botApiUrl)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((botData) => {
-        console.log("Bot data fetched:", botData);
-        const bot = botData.response;
+    if (businessId && botId) {
+      console.log("Using provided businessId and botId directly.");
+      createWidget({ businessId, botId });
+      return;
+    }
 
-        if (!bot || !bot.business) {
-          throw new Error("No business linked to this bot");
-        }
+    if (botId) {
+      const botApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/bot/${botId}`;
+      console.log("Fetching bot from:", botApiUrl);
 
-        const businessId = typeof bot.business === "object" ? bot.business._id : bot.business;
-        const buttonColor = bot.button_color || "#5454D4";
-        const textColor = bot.text_color || "#ffffff";
-        const position = bot.position || "bottom-right";
+      fetch(botApiUrl)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+          return res.json();
+        })
+        .then((data) => {
+          const bot = data.response;
+          const businessId = typeof bot.business === "object" ? bot.business._id : bot.business;
+          createWidget({
+            businessId,
+            botId,
+            buttonColor: bot.button_color || "#5454D4",
+            textColor: bot.text_color || "#ffffff",
+            position: bot.position || "bottom-right",
+          });
+        })
+        .catch((err) => {
+          console.error("❌ Error fetching bot:", err);
+        });
+    } else if (businessId) {
+      const businessApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}`;
+      console.log("Fetching business from:", businessApiUrl);
 
-        createWidget({ botId, businessId, buttonColor, textColor, position });
-      })
-      .catch((err) => {
-        console.error("Error fetching bot config:", err);
-        createWidget({ botId }); // fallback
-      });
+      fetch(businessApiUrl)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+          return res.json();
+        })
+        .then((data) => {
+          const business = data.response;
+          const botId = typeof business.bot === "object" ? business.bot._id : business.bot;
+          createWidget({
+            businessId,
+            botId,
+            buttonColor: business.color || "#5454D4",
+            textColor: business.text_color || "#ffffff",
+            position: business.position || "bottom-right",
+          });
+        })
+        .catch((err) => {
+          console.error("❌ Error fetching business:", err);
+        });
+    } else {
+      console.error("❌ You must provide either botId or businessId");
+    }
   }
 
   function createWidget({
-    businessId = null,
+    businessId,
     botId = null,
     buttonColor = "#5454D4",
     textColor = "#ffffff",
     position = "bottom-right",
   }) {
     const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?business=${encodeURIComponent(businessId)}`;
-    console.log("Creating widget with chat URL:", chatUrl);
+    console.log("🧩 Creating widget with chat URL:", chatUrl);
 
     const positionStyles = {
       "top-left": { top: "20px", left: "20px" },
@@ -95,30 +121,28 @@
     document.body.appendChild(chatIframe);
   }
 
-  // queue handler before script load
+  // preload queue (for early calls)
   window.botbuddy =
     window.botbuddy ||
     function () {
       (window.botbuddy.q = window.botbuddy.q || []).push(arguments);
     };
 
-  // process preloaded commands
+  // process preload
   if (window.botbuddy.q) {
-    for (let i = 0; i < window.botbuddy.q.length; i++) {
-      const args = window.botbuddy.q[i];
+    for (const args of window.botbuddy.q) {
       if (args[0] === "init" && args[1]) {
         init(args[1]);
       }
     }
   }
 
-  // support dynamic calls
+  // live support
   window.botbuddy = new Proxy(window.botbuddy, {
-    apply(target, thisArg, args) {
+    apply(_, __, args) {
       if (args[0] === "init" && args[1]) {
         init(args[1]);
       }
-      return target(...args);
     },
   });
 
