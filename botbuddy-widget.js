@@ -18,11 +18,12 @@
       .then((businessData) => {
         console.log("Business data fetched:", businessData);
         const business = businessData.response;
+
         if (!business || !business.bot) {
           throw new Error("No bot linked to this business");
         }
 
-        const botId = business.bot._id || business.bot;
+        const botId = typeof business.bot === "object" ? business.bot._id : business.bot;
         const buttonColor = business.color || "#5454D4";
         const textColor = business.text_color || "#ffffff";
         const position = business.position || "bottom-right";
@@ -31,7 +32,7 @@
       })
       .catch((err) => {
         console.error("Error fetching business/bot config:", err);
-        createWidget({ businessId }); // fallback with defaults
+        createWidget({ businessId }); // fallback
       });
   }
 
@@ -95,12 +96,14 @@
     document.body.appendChild(chatIframe);
   }
 
+  // queue handler before script load
   window.botbuddy =
     window.botbuddy ||
     function () {
       (window.botbuddy.q = window.botbuddy.q || []).push(arguments);
     };
 
+  // process any preloaded queue items
   if (window.botbuddy.q) {
     for (let i = 0; i < window.botbuddy.q.length; i++) {
       const args = window.botbuddy.q[i];
@@ -110,6 +113,7 @@
     }
   }
 
+  // support dynamic calls after script loaded
   window.botbuddy = new Proxy(window.botbuddy, {
     apply(target, thisArg, args) {
       if (args[0] === "init" && args[1]) {
