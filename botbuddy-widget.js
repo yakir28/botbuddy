@@ -2,28 +2,20 @@
   let businessId = null;
 
   function init(config) {
-    console.log("BotBuddy init called with config:", config);
     businessId = config.businessId;
 
+    // Fetch business object
     const businessApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}`;
-    console.log("Fetching business from URL:", businessApiUrl);
 
     fetch(businessApiUrl)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((businessData) => {
-        console.log("Business data fetched:", businessData);
         const business = businessData.response;
-
         if (!business || !business.bot) {
           throw new Error("No bot linked to this business");
         }
 
-        const botId = typeof business.bot === "object" ? business.bot._id : business.bot;
+        const botId = business.bot._id || business.bot;
         const buttonColor = business.color || "#5454D4";
         const textColor = business.text_color || "#ffffff";
         const position = business.position || "bottom-right";
@@ -44,8 +36,7 @@
     position = "bottom-right",
   }) {
     const chatParam = botId || businessId;
-    const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?bot=${encodeURIComponent(chatParam)}`;
-    console.log("Creating widget with chat URL:", chatUrl);
+    const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?business=${encodeURIComponent(chatParam)}`;
 
     const positionStyles = {
       "top-left": { top: "20px", left: "20px" },
@@ -96,14 +87,12 @@
     document.body.appendChild(chatIframe);
   }
 
-  // queue handler before script load
   window.botbuddy =
     window.botbuddy ||
     function () {
       (window.botbuddy.q = window.botbuddy.q || []).push(arguments);
     };
 
-  // process any preloaded queue items
   if (window.botbuddy.q) {
     for (let i = 0; i < window.botbuddy.q.length; i++) {
       const args = window.botbuddy.q[i];
@@ -113,7 +102,6 @@
     }
   }
 
-  // support dynamic calls after script loaded
   window.botbuddy = new Proxy(window.botbuddy, {
     apply(target, thisArg, args) {
       if (args[0] === "init" && args[1]) {
@@ -122,6 +110,4 @@
       return target(...args);
     },
   });
-
-  console.log("✅ BotBuddy widget script loaded");
 })();
