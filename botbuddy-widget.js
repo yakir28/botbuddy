@@ -2,14 +2,21 @@
   let businessId = null;
 
   function init(config) {
+    console.log("BotBuddy init called with config:", config);
     businessId = config.businessId;
 
-    // Fetch business object
     const businessApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}`;
+    console.log("Fetching business from URL:", businessApiUrl);
 
     fetch(businessApiUrl)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((businessData) => {
+        console.log("Business data fetched:", businessData);
         const business = businessData.response;
         if (!business || !business.bot) {
           throw new Error("No bot linked to this business");
@@ -24,7 +31,7 @@
       })
       .catch((err) => {
         console.error("Error fetching business/bot config:", err);
-        createWidget({ businessId }); // fallback
+        createWidget({ businessId }); // fallback with defaults
       });
   }
 
@@ -37,6 +44,7 @@
   }) {
     const chatParam = botId || businessId;
     const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?bot=${encodeURIComponent(chatParam)}`;
+    console.log("Creating widget with chat URL:", chatUrl);
 
     const positionStyles = {
       "top-left": { top: "20px", left: "20px" },
@@ -110,4 +118,6 @@
       return target(...args);
     },
   });
+
+  console.log("✅ BotBuddy widget script loaded");
 })();
