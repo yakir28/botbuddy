@@ -1,43 +1,43 @@
 (function () {
-  let businessId = null;
+  let botId = null;
 
   function init(config) {
     console.log("BotBuddy init called with config:", config);
-    businessId = config.businessId;
+    botId = config.botId;
 
-    const businessApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/business/${businessId}`;
-    console.log("Fetching business from URL:", businessApiUrl);
+    const botApiUrl = `https://botbuddy-new.bubbleapps.io/api/1.1/obj/bot/${botId}`;
+    console.log("Fetching bot from URL:", botApiUrl);
 
-    fetch(businessApiUrl)
+    fetch(botApiUrl)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! Status: ${res.status}`);
         }
         return res.json();
       })
-      .then((businessData) => {
-        console.log("Business data fetched:", businessData);
-        const business = businessData.response;
+      .then((botData) => {
+        console.log("Bot data fetched:", botData);
+        const bot = botData.response;
 
-        if (!business || !business.bot) {
-          throw new Error("No bot linked to this business");
+        if (!bot || !bot.business) {
+          throw new Error("No business linked to this bot");
         }
 
-        const botId = typeof business.bot === "object" ? business.bot._id : business.bot;
-        const buttonColor = business.color || "#5454D4";
-        const textColor = business.text_color || "#ffffff";
-        const position = business.position || "bottom-right";
+        const businessId = typeof bot.business === "object" ? bot.business._id : bot.business;
+        const buttonColor = bot.button_color || "#5454D4";
+        const textColor = bot.text_color || "#ffffff";
+        const position = bot.position || "bottom-right";
 
-        createWidget({ businessId, botId, buttonColor, textColor, position });
+        createWidget({ botId, businessId, buttonColor, textColor, position });
       })
       .catch((err) => {
-        console.error("Error fetching business/bot config:", err);
-        createWidget({ businessId }); // fallback
+        console.error("Error fetching bot config:", err);
+        createWidget({ botId }); // fallback
       });
   }
 
   function createWidget({
-    businessId,
+    businessId = null,
     botId = null,
     buttonColor = "#5454D4",
     textColor = "#ffffff",
@@ -102,7 +102,7 @@
       (window.botbuddy.q = window.botbuddy.q || []).push(arguments);
     };
 
-  // process any preloaded queue items
+  // process preloaded commands
   if (window.botbuddy.q) {
     for (let i = 0; i < window.botbuddy.q.length; i++) {
       const args = window.botbuddy.q[i];
@@ -112,7 +112,7 @@
     }
   }
 
-  // support dynamic calls after script loaded
+  // support dynamic calls
   window.botbuddy = new Proxy(window.botbuddy, {
     apply(target, thisArg, args) {
       if (args[0] === "init" && args[1]) {
