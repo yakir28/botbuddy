@@ -96,6 +96,7 @@
         width: "360px",
         height: "600px",
         border: "none",
+        overflow: "hidden",
         borderRadius: "12px",
         display: "none",
         zIndex: "9999",
