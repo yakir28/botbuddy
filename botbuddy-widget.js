@@ -40,7 +40,7 @@
       // Button style from bot config
       const buttonColor = bot.color || "#5454D4";
       const textColor = bot.textColor || "#ffffff";
-      const position = bot.position || "bottom-right";
+      let position = bot.position || "bottom-right";
 
       const posStyles = {
         "bottom-right": { bottom: "20px", right: "20px" },
@@ -49,7 +49,14 @@
         "top-left": { top: "20px", left: "20px" },
       };
 
-      const buttonPos = posStyles[position] || posStyles["bottom-right"];
+      // Override position on mobile to bottom-right 5px
+      let buttonPos;
+      if (window.innerWidth <= 768) {
+        position = "bottom-right";
+        buttonPos = { bottom: "5px", right: "5px" };
+      } else {
+        buttonPos = posStyles[position] || posStyles["bottom-right"];
+      }
 
       // Create chat button
       const chatButton = document.createElement("button");
@@ -103,8 +110,8 @@
         boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
         backgroundColor: "#fff",
         ...buttonPos,
-        bottom: buttonPos.bottom ? "90px" : undefined,
-        top: buttonPos.top ? "90px" : undefined,
+        bottom: buttonPos.bottom ? `calc(${buttonPos.bottom} + 70px)` : undefined,
+        top: buttonPos.top ? `calc(${buttonPos.top} + 70px)` : undefined,
       });
 
       chatButton.addEventListener("click", () => {
