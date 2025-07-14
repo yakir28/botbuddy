@@ -102,7 +102,7 @@
         position: "fixed",
         width: "365px",
         height: "600px",
-        padding:0;
+        padding: "0";,
         border: "none",
         overflow: "hidden",
         borderRadius: "12px",
