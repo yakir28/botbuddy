@@ -101,7 +101,7 @@
       Object.assign(chatIframe.style, {
         position: "fixed",
         width: "365px",
-        height: "620px",
+        height: "650px",
         border: "none",
         overflow: "hidden",
         borderRadius: "12px",
