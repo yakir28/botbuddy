@@ -100,7 +100,7 @@
       chatIframe.src = chatUrl;
       Object.assign(chatIframe.style, {
         position: "fixed",
-        width: "365px",
+        width: "350px",
         height: "600px",
         border: "none",
         overflow: "hidden",
