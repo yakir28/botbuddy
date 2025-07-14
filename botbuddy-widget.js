@@ -101,7 +101,7 @@
       Object.assign(chatIframe.style, {
         position: "fixed",
         width: "365px",
-        height: "650px",
+        height: "600px",
         border: "none",
         overflow: "hidden",
         borderRadius: "12px",
@@ -109,9 +109,6 @@
         zIndex: "9999",
         boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
         backgroundColor: "#fff",
-        ...buttonPos,
-        bottom: buttonPos.bottom ? `calc(${buttonPos.bottom} + 70px)` : undefined,
-        top: buttonPos.top ? `calc(${buttonPos.top} + 70px)` : undefined,
       });
 
       chatButton.addEventListener("click", () => {
