@@ -37,7 +37,6 @@
       const bot = botRes.response;
       const chatUrl = `https://botbuddy-new.bubbleapps.io/chat?business=${encodeURIComponent(businessId)}`;
 
-      // Button style from bot config
       const buttonColor = bot.color || "#5454D4";
       const textColor = bot.textColor || "#ffffff";
       let position = bot.position || "bottom-right";
@@ -49,7 +48,6 @@
         "top-left": { top: "20px", left: "20px" },
       };
 
-      // Override position on mobile to bottom-right 5px
       let buttonPos;
       if (window.innerWidth <= 768) {
         position = "bottom-right";
@@ -58,7 +56,7 @@
         buttonPos = posStyles[position] || posStyles["bottom-right"];
       }
 
-      // Create chat button
+      // Create Chat Button
       const chatButton = document.createElement("button");
       Object.assign(chatButton.style, {
         position: "fixed",
@@ -78,7 +76,6 @@
         ...buttonPos,
       });
 
-      // Add SVG icon to button
       const svgNS = "http://www.w3.org/2000/svg";
       const svg = document.createElementNS(svgNS, "svg");
       svg.setAttribute("width", "28");
@@ -95,7 +92,7 @@
       svg.appendChild(path2);
       chatButton.appendChild(svg);
 
-      // Create iframe
+      // Create Iframe with animation styles
       const chatIframe = document.createElement("iframe");
       chatIframe.src = chatUrl;
       Object.assign(chatIframe.style, {
@@ -105,19 +102,31 @@
         border: "none",
         overflow: "hidden",
         borderRadius: "12px",
-        display: "none",
         zIndex: "9999",
         boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
         backgroundColor: "#fff",
-      ...buttonPos,             
+        opacity: "0",
+        transform: "translateY(20px)",
+        transition: "opacity 0.3s ease, transform 0.3s ease",
+        pointerEvents: "none",
+        ...buttonPos,
         bottom: buttonPos.bottom ? `calc(${buttonPos.bottom} + 70px)` : undefined,
         top: buttonPos.top ? `calc(${buttonPos.top} + 70px)` : undefined,
       });
-      
 
+      // Toggle animation on click
       chatButton.addEventListener("click", () => {
-        chatIframe.style.display =
-          chatIframe.style.display === "none" ? "block" : "none";
+        const isVisible = chatIframe.style.opacity === "1";
+
+        if (isVisible) {
+          chatIframe.style.opacity = "0";
+          chatIframe.style.transform = "translateY(20px)";
+          chatIframe.style.pointerEvents = "none";
+        } else {
+          chatIframe.style.opacity = "1";
+          chatIframe.style.transform = "translateY(0)";
+          chatIframe.style.pointerEvents = "auto";
+        }
       });
 
       document.body.appendChild(chatButton);
