@@ -73,9 +73,13 @@
         alignItems: "center",
         justifyContent: "center",
         padding: "0",
+        opacity: "0",
+        transform: "translateY(20px)",
+        animation: "botbuddy-fade-slide-in 0.5s ease-out forwards",
         ...buttonPos,
       });
 
+      // Add SVG icon
       const svgNS = "http://www.w3.org/2000/svg";
       const svg = document.createElementNS(svgNS, "svg");
       svg.setAttribute("width", "28");
@@ -92,7 +96,7 @@
       svg.appendChild(path2);
       chatButton.appendChild(svg);
 
-      // Create Iframe with animation styles
+      // Create iframe
       const chatIframe = document.createElement("iframe");
       chatIframe.src = chatUrl;
       Object.assign(chatIframe.style, {
@@ -114,8 +118,14 @@
         top: buttonPos.top ? `calc(${buttonPos.top} + 70px)` : undefined,
       });
 
-      // Toggle animation on click
+      // Toggle iframe on button click
       chatButton.addEventListener("click", () => {
+        // Add quick click animation
+        chatButton.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          chatButton.style.transform = "scale(1)";
+        }, 100);
+
         const isVisible = chatIframe.style.opacity === "1";
 
         if (isVisible) {
@@ -128,6 +138,22 @@
           chatIframe.style.pointerEvents = "auto";
         }
       });
+
+      // Add fade+slide keyframe styles
+      const style = document.createElement("style");
+      style.innerHTML = `
+        @keyframes botbuddy-fade-slide-in {
+          0% {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `;
+      document.head.appendChild(style);
 
       document.body.appendChild(chatButton);
       document.body.appendChild(chatIframe);
