@@ -35,7 +35,7 @@
       }
 
       const bot = botRes.response;
-      const chatUrl = `https://botbuddy-new.bubbleapps.io/embed_chat?business=${encodeURIComponent(businessId)}`;
+      const chatUrl = `https://botbuddy-new.bubbleapps.io/chat?business=${encodeURIComponent(businessId)}`;
 
       // Button style from bot config
       const buttonColor = bot.color || "#5454D4";
